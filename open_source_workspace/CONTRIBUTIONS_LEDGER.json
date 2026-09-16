@@ -7,6 +7,72 @@
       "topic": "Tongou-TO-Q-SYS-JWT-power-meter",
       "submitted_at": "2026-09-16T12:30:21.123310+00:00",
       "branch": "fix-tongou-to-q-sys-jwt-powe-1789561815"
+    },
+    {
+      "pr_url": "https://github.com/esphome/devices.esphome.io/pull/1870",
+      "pr_number": 1870,
+      "repo": "esphome/devices.esphome.io",
+      "topic": "Tuya-DY-CK400A-Garage-Door-Opener",
+      "submitted_at": "2026-09-16T12:36:11.447387+00:00",
+      "branch": "fix-tuya-dy-ck400a-garage-do-1789562165"
+    },
+    {
+      "pr_url": "https://github.com/esphome/devices.esphome.io/pull/1871",
+      "pr_number": 1871,
+      "repo": "esphome/devices.esphome.io",
+      "topic": "Tuya-Smart-Plug-20A-EU_BL0942",
+      "submitted_at": "2026-09-16T12:40:53.049549+00:00",
+      "branch": "fix-tuya-smart-plug-20a-eu_b-1789562448"
+    },
+    {
+      "pr_url": "https://github.com/TheAlgorithms/Python/pull/15359",
+      "pr_number": 15359,
+      "repo": "TheAlgorithms/Python",
+      "topic": "bubble_sort_recursive-comparable",
+      "submitted_at": "2026-09-16T12:49:25Z"
+    },
+    {
+      "pr_url": "https://github.com/esphome/devices.esphome.io/pull/1872",
+      "pr_number": 1872,
+      "repo": "esphome/devices.esphome.io",
+      "topic": "Tuya-DY-CK400A-Garage-Door-Opener",
+      "submitted_at": "2026-09-16T12:49:25Z"
+    },
+    {
+      "pr_url": "https://github.com/MxCorpIn/blogs/pull/17",
+      "pr_number": 17,
+      "repo": "MxCorpIn/blogs",
+      "topic": "modernize-readme-docs",
+      "submitted_at": "2026-09-16T12:49:25Z"
+    },
+    {
+      "pr_url": "https://github.com/TheAlgorithms/Python/pull/15360",
+      "pr_number": 15360,
+      "repo": "TheAlgorithms/Python",
+      "topic": "bubble_sort_recursive",
+      "submitted_at": "2026-09-16T13:00:53Z"
+    },
+    {
+      "pr_url": "https://github.com/TheAlgorithms/Python/pull/15361",
+      "pr_number": 15361,
+      "repo": "TheAlgorithms/Python",
+      "topic": "tree_sort",
+      "submitted_at": "2026-09-16T13:00:53Z"
+    }
+  ],
+  "reviews": [
+    {
+      "repo": "esphome/devices.esphome.io",
+      "pr_number": 1871,
+      "reviewed_at": "2026-09-16T12:40:53.998635+00:00"
+    }
+  ],
+  "issues": [
+    {
+      "repo": "pruthvi828/DR-DOOM-WORKSHOP",
+      "issue_url": "https://github.com/pruthvi828/DR-DOOM-WORKSHOP/issues/1",
+      "title": "\u26a1 Milestone Tracker: Automated Workflow Telemetry & Cross-Platform Bridge (Sep 2026)",
+      "created_at": "2026-09-16T12:40:54.740032+00:00"
     }
   ]
 }
