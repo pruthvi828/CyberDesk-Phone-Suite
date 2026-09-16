@@ -1,66 +1,88 @@
-# 📱 Phone Data Cleaner & Safe Backup Suite
+﻿# ⚡ CyberDesk: Low-Level Android Systems, Diagnostics & DSP Suite
 
-Clean unnecessary junk, screenshots, and leftover app files from your phone via USB while safeguarding and backing up all your **important documents**, **camera photos & videos**, and **meaningful records**.
-
----
-
-## 🌟 Key Features
-
-1. **Safety First (Backup Before Clean)**:
-   - 🛡️ One-click safe backup of all important documents (`.pdf`, `.docx`, `.xlsx`, `.txt`, scanned files), WhatsApp docs, and genuine camera photos directly onto your PC (`D:\Phone_Safe_Backup`).
-2. **Intelligent Segregation**:
-   - 📸 **Camera Photos/Videos**: Kept safe.
-   - ✂️ **Screenshots & Screen Captures**: Accurately detected and isolated for deletion.
-   - 🧹 **Junk & Cache**: `.thumbnails`, `.cache`, WhatsApp stickers trash, leftover `.tmp` and `.apk` installers flagged for 1-click clean.
-   - 📄 **Meaningful Documents**: Work, study, and financial documents are strictly preserved.
-3. **Dual Connection Modes**:
-   - **ADB Direct USB Mode**: Automatic deep scan of internal storage `/sdcard/` over USB cable.
-   - **Local / MTP Folder Mode**: Works with any mounted phone folder or USB drive.
-4. **Dry Run Preview**:
-   - Review exact filenames, paths, and total gigabytes before confirming any deletion.
+An advanced hardware interfacing and diagnostic suite for Android devices over USB/ADB. Features **kernel-level display refresh rate pinning (120Hz continuous)**, **real-time optical photoplethysmography (PPG) biometric monitoring**, **high-speed 120 FPS audio FFT digital signal processing (DSP)**, **acoustic resonance speaker ejection (165Hz)**, and an **autonomous open-source contribution scout**.
 
 ---
 
-## 🚀 How to Run
+## 🌟 Core Engineering Modules
 
-### Option 1: One-Click GUI Launcher (Recommended)
-Double-click `start_cleaner.bat` in this folder, or run:
-```bash
-python backend/app.py
-```
-Then open **[http://127.0.0.1:8484](http://127.0.0.1:8484)** in your web browser.
+### 1. 📱 Low-Level Android Internals & Display Overclocking
+- **SurfaceFlinger Refresh Rate Pinning**: Uses shell-level `settings put system peak_refresh_rate 120.0` and `min_refresh_rate 120.0` to force maximum fluidity on dynamic-LTPO displays (Realme/ColorOS, OxygenOS, Pixel).
+- **Subsystem Diagnostics**: Telemetry gathering for battery thermal curves, memory headroom, storage block allocation, and running background daemons.
+- **Wireless Scrcpy Engine**: Low-latency H.264/H.265 screen mirroring and low-overhead control streams over ADB TCP/IP.
 
----
+### 2. ❤️ Real-Time Optical Biometric Sensing (PPG)
+- **Mathematical Photoplethysmography**: Extracts systolic arterial pulses directly through the rear camera sensor by illuminating capillaries with the LED flash.
+- **Green/Luminance Channel Decomposition**: Captures optical absorption flux caused by hemoglobin pulsatile blood flow, applies moving-average smoothing and peak-to-peak interval (PPI) filtering to compute BPM and HRV in real-time.
 
-### Option 2: Command-Line (CLI) Mode
-To scan connected USB phone:
-```bash
-python cli.py --mode adb
-```
+### 3. 🔊 120 FPS Audio FFT Digital Signal Processing (DSP)
+- **1024-Point Fast Fourier Transform**: Real-time spectral audio analysis via WebAudio API rendered onto HTML5 Canvas with dual neon cyber-glow shaders.
+- **Acoustic Water Ejection**: Emits calibrated resonant sound waves (165Hz square/sine sweeps with duty-cycle pulses) to generate kinetic air displacement and dislodge moisture from the phone's speaker acoustic chamber.
 
-To backup all docs and photos:
-```bash
-python cli.py --mode adb --backup --backup-dest "D:\Phone_Safe_Backup"
-```
+### 4. 🖱️ Zero-Latency Phone-as-Trackpad
+- Converts the mobile capacitive touchscreen into a high-precision PC trackpad and media control deck using WebSocket communication to the host machine.
 
-To preview cleanup of screenshots & junk (Dry Run):
-```bash
-python cli.py --mode adb --clean-screenshots --clean-junk --dry-run
-```
+### 5. 🛡️ Non-Destructive Storage Segregator
+- Distinguishes user media from junk: preserves genuine camera photos, videos, and mission-critical documents (`.pdf`, `.docx`, `.xlsx`) while isolating ephemeral screenshots, `.cache`, `.thumbnails`, and orphaned `.apk` installers.
 
-To execute cleanup:
-```bash
-python cli.py --mode adb --clean-screenshots --clean-junk
-```
+### 6. 📡 Autonomous Open-Source Contribution Radar
+- Automated GitHub Actions scout that continuously indexes unassigned `good first issue` opportunities across high-star repositories with a zero-risk anti-spam policy.
 
 ---
 
-## 🔌 Connecting your Phone via USB (Quick Guide)
+## 🏗️ Architecture Overview
 
-1. Connect your phone to your PC with a **USB cable**.
-2. Set USB mode to **File Transfer (MTP)** on your phone.
-3. Enable **USB Debugging**:
-   - Open **Settings > About Phone**.
-   - Tap **Build Number** 7 times until Developer Mode is unlocked.
-   - Go to **Settings > System / Developer Options** > Turn on **USB Debugging**.
-   - Tap **Allow USB Debugging** on the phone prompt and check *"Always allow from this computer"*.
+```
+                          ┌────────────────────────┐
+                          │   Android Device       │
+                          │   (Realme P1 5G)       │
+                          └──────────┬─────────────┘
+                                     │  USB / ADB Shell
+                                     ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        CyberDesk Backend Engine                        │
+│                                                                        │
+│   [ADB Bridge & Shell]    [Audio DSP & Ejection]   [PPG Biometrics]    │
+│    · Refresh Rate Lock     · 165Hz Sonic Pulses     · Hemoglobin Flux  │
+│    · Thermal Telemetry     · 1024-pt FFT Stream     · Camera2 Stream   │
+└────────────────────────────────────┬───────────────────────────────────┘
+                                     │  FastAPI / WebSockets
+                                     ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                    CyberDesk Real-Time HUD (Web)                       │
+│                                                                        │
+│   · 120 FPS Neon Audio Visualizer   · Interactive Hardware Console     │
+│   · Real-Time Heart Rate Gauge      · Wireless Scrcpy Mirroring        │
+└────────────────────────────────────┴───────────────────────────────────┘
+```
+
+---
+
+## 🚀 Quickstart & Deployment
+
+### 1. Prerequisites
+- Python 3.10+
+- Android SDK Platform-Tools (`adb`) on PATH
+- Android device connected via USB with **USB Debugging** enabled
+
+### 2. Installation
+```bash
+git clone https://github.com/pruthvi828/PHONE-CLEAN.git
+cd PHONE-CLEAN
+pip install -r requirements.txt
+```
+
+### 3. Launching CyberDesk Suite
+```bash
+# Double-click start_cleaner.bat or run:
+python -m uvicorn backend.app:app --host 0.0.0.0 --port 8484
+```
+Access the interactive HUD at **`http://localhost:8484`**.
+
+---
+
+## 🛠️ Technology Stack
+- **Languages:** Python, JavaScript (ES6+), PowerShell, Bash
+- **Frameworks:** FastAPI, Uvicorn, WebAudio API, HTML5 Canvas 2D
+- **Hardware Protocol:** Android Debug Bridge (ADB), Camera2 API, SurfaceFlinger
+- **Automation & CI/CD:** GitHub Actions, Python `urllib`/`requests`
