@@ -649,6 +649,37 @@ async def handle_mouse_http(data: Dict[str, Any] = Body(...)):
     return {"success": True}
 
 
+@app.post("/api/auto-contribute/run")
+async def run_auto_contribute():
+    """Trigger 1-click autonomous open-source contribution."""
+    try:
+        from backend.auto_pr_engine import AutoPREngine
+    except ImportError:
+        from auto_pr_engine import AutoPREngine
+
+    logs = []
+    def on_progress(stage, msg, pct):
+        logs.append({"stage": stage, "message": msg, "percent": pct})
+        sync_broadcast_progress(msg, pct, stage=stage)
+
+    try:
+        engine = AutoPREngine(callback=on_progress)
+        result = engine.run_one_click()
+        return {"success": True, "result": result, "logs": logs}
+    except Exception as e:
+        return {"success": False, "error": str(e), "logs": logs}
+
+
+@app.get("/api/auto-contribute/ledger")
+async def get_contributions_ledger():
+    """Return past automated contributions."""
+    try:
+        from backend.auto_pr_engine import load_ledger
+    except ImportError:
+        from auto_pr_engine import load_ledger
+    return load_ledger()
+
+
 # Mount static files and frontend
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

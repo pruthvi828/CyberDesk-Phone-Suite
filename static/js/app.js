@@ -752,3 +752,31 @@ function showOperationComplete(title, htmlMessage) {
   logBox.innerHTML = `<div style="color: #6ee7b7; padding: 4px 0;">${htmlMessage}</div>`;
   document.getElementById("progressModalFooter").style.display = "block";
 }
+
+async function triggerAutoContribute() {
+  showProgressModal("Autonomous Open-Source Dispatch", "Scouting unassigned open-source issues...");
+  updateProgressUI("Authenticating via GitHub OAuth Bridge...", 15);
+
+  try {
+    const res = await fetch("/api/auto-contribute/run", { method: "POST" });
+    const data = await res.json();
+
+    if (data.success && data.result) {
+      const pr = data.result;
+      const html = `
+        <div style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 12px; margin-top: 8px;">
+          <h4 style="color: #34d399; margin: 0 0 6px 0; font-size: 15px;"><i class="bi bi-patch-check-fill"></i> Pull Request Successfully Submitted!</h4>
+          <p style="margin: 0 0 8px 0; font-size: 13px;">Target: <b>${pr.repo}</b> (${pr.topic})</p>
+          <a href="${pr.pr_url}" target="_blank" class="btn btn-success btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 600;">
+            <i class="bi bi-box-arrow-up-right"></i> View PR #${pr.pr_number} on GitHub ↗
+          </a>
+        </div>
+      `;
+      showOperationComplete("Contribution Dispatched!", html);
+    } else {
+      showOperationComplete("Status", `<span style="color: #f87171;">${data.error || data.message || "No pending unassigned issues."}</span>`);
+    }
+  } catch (err) {
+    showOperationComplete("Failed", `<span style="color: #f87171;">Error: ${err.message}</span>`);
+  }
+}

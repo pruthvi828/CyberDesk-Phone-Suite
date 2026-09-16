@@ -1,0 +1,12 @@
+{
+  "contributions": [
+    {
+      "pr_url": "https://github.com/esphome/devices.esphome.io/pull/1869",
+      "pr_number": 1869,
+      "repo": "esphome/devices.esphome.io",
+      "topic": "Tongou-TO-Q-SYS-JWT-power-meter",
+      "submitted_at": "2026-09-16T12:30:21.123310+00:00",
+      "branch": "fix-tongou-to-q-sys-jwt-powe-1789561815"
+    }
+  ]
+}
