@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#030508">
+  <title>CyberDesk • Studio Audio Spectrum & VU Meter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --bg: #030508;
+      --surface: rgba(12, 17, 28, 0.85);
+      --cyan: #00f0ff;
+      --magenta: #ff007f;
+      --purple: #8b5cf6;
+      --amber: #f59e0b;
+      --green: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 70vw;
+      height: 70vh;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, rgba(255, 0, 127, 0.04) 50%, transparent 70%);
+      pointer-events: none;
+      transition: all 0.1s ease-out;
+      z-index: 1;
+    }
+
+    /* Top HUD */
+    header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      background: linear-gradient(to bottom, rgba(3, 5, 8, 0.9) 0%, transparent 100%);
+      transition: opacity 0.4s ease;
+    }
+
+    body.idle-hud header,
+    body.idle-hud .bottom-bar {
+      opacity: 0.15;
+    }
+
+    body.idle-hud header:hover,
+    body.idle-hud .bottom-bar:hover {
+      opacity: 1;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      letter-spacing: 1px;
+    }
+
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .hud-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mode-tab {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .mode-tab.active {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(255, 0, 127, 0.2));
+      color: #fff;
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--cyan);
+    }
+
+    /* Main Visualizer Canvas Area */
+    .canvas-container {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Bottom Control & Status Bar */
+    .bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      background: linear-gradient(to top, rgba(3, 5, 8, 0.95) 0%, transparent 100%);
+      transition: opacity 0.4s ease;
+    }
+
+    .live-metrics {
+      display: flex;
+      gap: 20px;
+    }
+
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metric-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: #64748b;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .metric-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .slider-group label {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 90px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--cyan);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    /* Start Overlay (if mic not triggered yet) */
+    .start-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(3, 5, 8, 0.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      text-align: center;
+      padding: 24px;
+      cursor: pointer;
+    }
+
+    .start-pulse-icon {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--magenta));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      color: #fff;
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.5);
+      animation: hero-pulse 2s infinite;
+    }
+
+    @keyframes hero-pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+      50% { transform: scale(1.08); box-shadow: 0 0 50px rgba(255, 0, 127, 0.6); }
+      100% { transform: scale(0.95); box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+    }
+
+    .start-overlay h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .start-overlay p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      max-width: 320px;
+      line-height: 1.5;
+    }
+
+    .start-btn {
+      padding: 14px 28px;
+      border-radius: 30px;
+      border: none;
+      background: linear-gradient(135deg, var(--cyan), var(--magenta));
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+      transition: transform 0.2s;
+    }
+
+    .start-btn:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow" id="ambientGlow"></div>
+
+  <!-- Start Overlay -->
+  <div class="start-overlay" id="startOverlay">
+    <div class="start-pulse-icon">
+      <i class="bi bi-soundwave"></i>
+    </div>
+    <h2>CyberDesk Audio Engine</h2>
+    <p>Tap anywhere to initialize high-fidelity 64-band acoustic visualization for your desk.</p>
+    <button class="start-btn">
+      <i class="bi bi-play-fill"></i> Activate Spectrum
+    </button>
+  </div>
+
+  <!-- Top HUD -->
+  <header>
+    <div class="brand">
+      <div class="brand-pill">120Hz FFT</div>
+      <div class="brand-title">CYBERDESK</div>
+    </div>
+    <div class="hud-controls">
+      <button class="mode-tab active" data-mode="bars">
+        <i class="bi bi-bar-chart-fill"></i> Neon Bars
+      </button>
+      <button class="mode-tab" data-mode="radial">
+        <i class="bi bi-bullseye"></i> Bass Nova
+      </button>
+      <button class="mode-tab" data-mode="vu">
+        <i class="bi bi-speedometer2"></i> Analog VU
+      </button>
+      <button class="icon-btn" id="fsBtn" title="Fullscreen">
+        <i class="bi bi-arrows-fullscreen"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Visualizer Canvas -->
+  <div class="canvas-container">
+    <canvas id="visCanvas"></canvas>
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <div class="live-metrics">
+      <div class="metric-item">
+        <span class="metric-label">Peak Energy</span>
+        <span class="metric-val" id="peakEnergy">0 dB</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Sub-Bass Kick</span>
+        <span class="metric-val" id="bassMetric">0%</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Dominant Tone</span>
+        <span class="metric-val" id="freqMetric">-- Hz</span>
+      </div>
+    </div>
+
+    <div class="slider-group">
+      <label><i class="bi bi-sliders"></i> Gain</label>
+      <input type="range" id="gainSlider" min="0.5" max="3.0" step="0.1" value="1.4">
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('visCanvas');
+    const ctx = canvas.getContext('2d');
+    const startOverlay = document.getElementById('startOverlay');
+    const ambientGlow = document.getElementById('ambientGlow');
+    const peakEnergyEl = document.getElementById('peakEnergy');
+    const bassMetricEl = document.getElementById('bassMetric');
+    const freqMetricEl = document.getElementById('freqMetric');
+    const gainSlider = document.getElementById('gainSlider');
+    const modeTabs = document.querySelectorAll('.mode-tab');
+    const fsBtn = document.getElementById('fsBtn');
+
+    let currentMode = 'bars';
+    let gainMultiplier = 1.4;
+    gainSlider.addEventListener('input', (e) => {
+      gainMultiplier = parseFloat(e.target.value);
+    });
+
+    modeTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        modeTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentMode = tab.dataset.mode;
+      });
+    });
+
+    // Fullscreen toggle
+    fsBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Idle HUD fade
+    let idleTimer = null;
+    function resetIdle() {
+      document.body.classList.remove('idle-hud');
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        document.body.classList.add('idle-hud');
+      }, 4000);
+    }
+    window.addEventListener('mousemove', resetIdle);
+    window.addEventListener('touchstart', resetIdle);
+    resetIdle();
+
+    // Canvas Resize
+    function resize() {
+      canvas.width = window.innerWidth * window.devicePixelRatio;
+      canvas.height = window.innerHeight * window.devicePixelRatio;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // Web Audio State
+    let audioCtx = null;
+    let analyser = null;
+    let dataArray = null;
+    let timeArray = null;
+    let isLive = false;
+
+    // Peak physics for Neon Bars
+    const BAR_COUNT = 64;
+    let peakCaps = new Array(BAR_COUNT).fill(0);
+    let peakDecaySpeeds = new Array(BAR_COUNT).fill(0);
+
+    // Analog VU Meter physics
+    let leftNeedlePos = 0, rightNeedlePos = 0;
+    let leftNeedleVel = 0, rightNeedleVel = 0;
+
+    // Radial particles
+    let particles = [];
+
+    startOverlay.addEventListener('click', initAudio);
+
+    async function initAudio() {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        await audioCtx.resume();
+
+        // High fidelity audio stream without noise suppression or AGC (ideal for music)
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+          }
+        });
+
+        const source = audioCtx.createMediaStreamSource(stream);
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.72; // Snappy yet organic
+
+        source.connect(analyser);
+
+        const bufferLength = analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+        timeArray = new Uint8Array(bufferLength);
+
+        startOverlay.style.display = 'none';
+        isLive = true;
+
+        requestAnimationFrame(renderLoop);
+      } catch (err) {
+        alert("Audio Mic permission error: " + err.message);
+      }
+    }
+
+    function renderLoop() {
+      if (!isLive) return;
+
+      analyser.getByteFrequencyData(dataArray);
+      analyser.getByteTimeDomainData(timeArray);
+
+      // Compute Sub-Bass (0-150Hz), Mid, and High energy
+      let subBassSum = 0;
+      for (let i = 0; i < 8; i++) subBassSum += dataArray[i];
+      const bassLevel = (subBassSum / 8 / 255) * gainMultiplier;
+
+      // Peak Energy dB
+      let maxVal = 0;
+      let dominantBin = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        if (dataArray[i] > maxVal) {
+          maxVal = dataArray[i];
+          dominantBin = i;
+        }
+      }
+      const peakDb = Math.round(20 * Math.log10(Math.max(0.001, (maxVal / 255) * gainMultiplier)));
+      const approxFreq = Math.round(dominantBin * (audioCtx.sampleRate / analyser.fftSize));
+
+      peakEnergyEl.textContent = (peakDb > 0 ? "+" : "") + peakDb + " dB";
+      bassMetricEl.textContent = Math.min(100, Math.round(bassLevel * 100)) + "%";
+      freqMetricEl.textContent = maxVal > 30 ? approxFreq + " Hz" : "-- Hz";
+
+      // Ambient glow pulse
+      const glowScale = 1.0 + Math.min(0.6, bassLevel * 0.4);
+      const glowOpacity = Math.min(0.35, 0.05 + bassLevel * 0.25);
+      ambientGlow.style.transform = `translate(-50%, -50%) scale(${glowScale})`;
+      ambientGlow.style.background = `radial-gradient(circle, rgba(0, 240, 255, ${glowOpacity}) 0%, rgba(255, 0, 127, ${glowOpacity * 0.6}) 50%, transparent 70%)`;
+
+      // Render Active Mode
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (currentMode === 'bars') {
+        renderNeonBars(bassLevel);
+      } else if (currentMode === 'radial') {
+        renderRadialNova(bassLevel);
+      } else if (currentMode === 'vu') {
+        renderAnalogVUMeter(bassLevel, maxVal / 255);
+      }
+
+      requestAnimationFrame(renderLoop);
+    }
+
+    // --- MODE 1: CYBERPUNK NEON BARS ---
+    function renderNeonBars(bassLevel) {
+      const w = canvas.width;
+      const h = canvas.height;
+      const centerY = h * 0.58;
+      const maxBarHeight = h * 0.45;
+
+      const spacing = w / BAR_COUNT;
+      const barWidth = spacing * 0.72;
+
+      for (let i = 0; i < BAR_COUNT; i++) {
+        // Sample frequency logarithmic curve
+        const binIndex = Math.min(dataArray.length - 1, Math.floor(Math.pow(i / BAR_COUNT, 1.4) * (dataArray.length * 0.65)));
+        const rawVal = (dataArray[binIndex] / 255) * gainMultiplier;
+        const barHeight = Math.min(maxBarHeight, rawVal * maxBarHeight);
+
+        const x = i * spacing + (spacing - barWidth) / 2;
+        const y = centerY - barHeight;
+
+        // Floating Peak Cap physics
+        if (barHeight > peakCaps[i]) {
+          peakCaps[i] = barHeight;
+          peakDecaySpeeds[i] = 0;
+        } else {
+          peakDecaySpeeds[i] += 0.8;
+          peakCaps[i] = Math.max(0, peakCaps[i] - peakDecaySpeeds[i]);
+        }
+
+        // Color Gradient along spectrum
+        const hue = 180 + (i / BAR_COUNT) * 150; // Cyan (180) to Magenta (330)
+        const grad = ctx.createLinearGradient(0, centerY, 0, y);
+        grad.addColorStop(0, `hsla(${hue}, 100%, 60%, 0.95)`);
+        grad.addColorStop(1, `hsla(${hue + 30}, 100%, 75%, 1.0)`);
+
+        // Draw Main Bar
+        ctx.fillStyle = grad;
+        ctx.shadowColor = `hsla(${hue}, 100%, 60%, 0.8)`;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, barHeight, [4, 4, 0, 0]);
+        ctx.fill();
+
+        // Draw Mirror Reflection on floor
+        const reflectGrad = ctx.createLinearGradient(0, centerY, 0, centerY + barHeight * 0.35);
+        reflectGrad.addColorStop(0, `hsla(${hue}, 100%, 60%, 0.3)`);
+        reflectGrad.addColorStop(1, `transparent`);
+        ctx.fillStyle = reflectGrad;
+        ctx.shadowBlur = 0;
+        ctx.fillRect(x, centerY + 2, barWidth, barHeight * 0.35);
+
+        // Draw Peak Cap Line
+        const capY = centerY - peakCaps[i] - 3;
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = "#ffffff";
+        ctx.shadowBlur = 8;
+        ctx.fillRect(x, capY, barWidth, 3);
+        ctx.shadowBlur = 0;
+      }
+
+      // Horizon floor line
+      ctx.strokeStyle = "rgba(0, 240, 255, 0.25)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, centerY + 1);
+      ctx.lineTo(w, centerY + 1);
+      ctx.stroke();
+    }
+
+    // --- MODE 2: BASS NOVA RADIAL SHOCKWAVE ---
+    function renderRadialNova(bassLevel) {
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const baseRadius = Math.min(cx, cy) * 0.35;
+      const activeRadius = baseRadius + (bassLevel * 80);
+
+      // Spawn bass particles on beat
+      if (bassLevel > 0.6 && particles.length < 120) {
+        for (let k = 0; k < 6; k++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 4 + Math.random() * 8;
+          particles.push({
+            x: cx + Math.cos(angle) * activeRadius,
+            y: cy + Math.sin(angle) * activeRadius,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: 2 + Math.random() * 4,
+            alpha: 1.0,
+            hue: 180 + Math.random() * 140
+          });
+        }
+      }
+
+      // Draw and update particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.02;
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+        ctx.fillStyle = `hsla(${p.hue}, 100%, 70%, ${p.alpha})`;
+        ctx.shadowColor = `hsla(${p.hue}, 100%, 70%, ${p.alpha})`;
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // Draw Circular Spectrum Ribbon
+      const points = 72;
+      ctx.beginPath();
+      for (let i = 0; i <= points; i++) {
+        const angle = (i / points) * Math.PI * 2;
+        const bin = Math.floor((i % points) * 1.5);
+        const energy = ((dataArray[bin] || 0) / 255) * gainMultiplier;
+        const r = activeRadius + energy * 90;
+
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+
+      ctx.strokeStyle = `hsl(${180 + bassLevel * 140}, 100%, 65%)`;
+      ctx.shadowColor = `hsl(${180 + bassLevel * 140}, 100%, 65%)`;
+      ctx.shadowBlur = 24;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Inner Core Glow
+      const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, activeRadius);
+      coreGrad.addColorStop(0, `rgba(0, 240, 255, ${0.1 + bassLevel * 0.4})`);
+      coreGrad.addColorStop(0.7, `rgba(255, 0, 127, ${0.05 + bassLevel * 0.2})`);
+      coreGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, activeRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // --- MODE 3: VINTAGE ANALOG VU METERS ---
+    function renderAnalogVUMeter(bassLevel, peakVal) {
+      const w = canvas.width;
+      const h = canvas.height;
+      const meterW = Math.min(w * 0.44, 460);
+      const meterH = meterW * 0.65;
+      const meterY = (h - meterH) / 2;
+
+      // Ballistic physics calculation
+      const targetLeft = Math.min(1.1, (bassLevel * 0.9 + peakVal * 0.4));
+      const targetRight = Math.min(1.1, (peakVal * 1.1));
+
+      // Left Needle spring
+      leftNeedleVel = (leftNeedleVel + (targetLeft - leftNeedlePos) * 0.22) * 0.76;
+      leftNeedlePos = Math.max(0, leftNeedlePos + leftNeedleVel);
+
+      // Right Needle spring
+      rightNeedleVel = (rightNeedleVel + (targetRight - rightNeedlePos) * 0.22) * 0.76;
+      rightNeedlePos = Math.max(0, rightNeedlePos + rightNeedleVel);
+
+      drawSingleVUMeter((w / 2) - meterW - 16, meterY, meterW, meterH, "CH-1 LEFT", leftNeedlePos);
+      drawSingleVUMeter((w / 2) + 16, meterY, meterW, meterH, "CH-2 RIGHT", rightNeedlePos);
+    }
+
+    function drawSingleVUMeter(x, y, w, h, label, needleRatio) {
+      // Outer Casing
+      ctx.fillStyle = "#0c111c";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 14);
+      ctx.fill();
+      ctx.stroke();
+
+      // Dial Face (Vintage Tungsten Glow)
+      const dialGrad = ctx.createRadialGradient(x + w / 2, y + h * 0.8, 10, x + w / 2, y + h * 0.5, w * 0.6);
+      dialGrad.addColorStop(0, "#2c2518");
+      dialGrad.addColorStop(1, "#12100d");
+      ctx.fillStyle = dialGrad;
+      ctx.beginPath();
+      ctx.roundRect(x + 10, y + 10, w - 20, h - 20, 10);
+      ctx.fill();
+
+      // Arc Scale
+      const pivotX = x + w / 2;
+      const pivotY = y + h * 0.95;
+      const arcRadius = h * 0.78;
+
+      const minAngle = -Math.PI * 0.72;
+      const maxAngle = -Math.PI * 0.28;
+
+      ctx.strokeStyle = "rgba(255, 220, 150, 0.4)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(pivotX, pivotY, arcRadius, minAngle, maxAngle);
+      ctx.stroke();
+
+      // Redline Arc (above 0 dB)
+      const redlineAngle = minAngle + (maxAngle - minAngle) * 0.78;
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(pivotX, pivotY, arcRadius, redlineAngle, maxAngle);
+      ctx.stroke();
+
+      // Text Labels
+      ctx.fillStyle = "#e2e8f0";
+      ctx.font = `700 ${Math.round(w * 0.045)}px Outfit`;
+      ctx.textAlign = "center";
+      ctx.fillText("VU", pivotX, y + h * 0.45);
+
+      ctx.font = `600 ${Math.round(w * 0.03)}px 'JetBrains Mono'`;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.fillText(label, pivotX, y + h * 0.62);
+
+      // Decibel markings
+      ctx.font = `500 ${Math.round(w * 0.026)}px 'JetBrains Mono'`;
+      ctx.fillStyle = "#cbd5e1";
+      ctx.fillText("-20", x + w * 0.22, y + h * 0.35);
+      ctx.fillText("0 dB", x + w * 0.74, y + h * 0.32);
+      ctx.fillStyle = "#ef4444";
+      ctx.fillText("+3", x + w * 0.88, y + h * 0.38);
+
+      // Needle Drawing
+      const currentAngle = minAngle + Math.min(1.15, needleRatio) * (maxAngle - minAngle);
+      const tipX = pivotX + Math.cos(currentAngle) * arcRadius;
+      const tipY = pivotY + Math.sin(currentAngle) * arcRadius;
+
+      ctx.strokeStyle = needleRatio > 0.82 ? "#ff2a5f" : "#f59e0b";
+      ctx.shadowColor = ctx.strokeStyle;
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(pivotX, pivotY);
+      ctx.lineTo(tipX, tipY);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Needle Pivot Knob
+      ctx.fillStyle = "#0f172a";
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(pivotX, pivotY, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+  </script>
+</body>
+</html>

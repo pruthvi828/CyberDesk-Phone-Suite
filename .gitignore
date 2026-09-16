@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Temporary and Large Screen Dumps
+backend/*.png
+backend/*.apk
+backend/*.zip
+backend/scrcpy/
+*.apk
+*.zip
+
+# OS and IDE Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local Backups & Sensitive data
+Safe_Phone_Backup/
+scratch/

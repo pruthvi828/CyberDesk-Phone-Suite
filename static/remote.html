@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Fire TV Phone Remote</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --panel-bg: rgba(22, 30, 49, 0.75);
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --btn-bg: rgba(255, 255, 255, 0.07);
+      --btn-active: rgba(99, 102, 241, 0.35);
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #172138 0%, #090d16 100%);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 24px;
+      overflow-x: hidden;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .device-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 10px var(--success);
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--btn-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.92);
+      background: var(--btn-active);
+      border-color: var(--accent);
+    }
+
+    .icon-btn.power {
+      color: var(--danger);
+    }
+
+    /* Remote Body */
+    .remote-case {
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+
+    /* D-Pad Circular Controller */
+    .dpad-container {
+      position: relative;
+      width: 230px;
+      height: 230px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, rgba(30, 41, 64, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dpad-btn {
+      position: absolute;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s ease;
+    }
+
+    .dpad-btn:active {
+      color: #fff;
+      filter: drop-shadow(0 0 8px var(--accent));
+    }
+
+    .dpad-up { top: 12px; left: 50%; transform: translateX(-50%); width: 70px; height: 50px; }
+    .dpad-down { bottom: 12px; left: 50%; transform: translateX(-50%); width: 70px; height: 50px; }
+    .dpad-left { left: 12px; top: 50%; transform: translateY(-50%); width: 50px; height: 70px; }
+    .dpad-right { right: 12px; top: 50%; transform: translateY(-50%); width: 50px; height: 70px; }
+
+    .dpad-center {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #2a3856 0%, #151d30 100%);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: all 0.15s ease;
+    }
+
+    .dpad-center:active {
+      transform: scale(0.93);
+      background: var(--accent);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    /* Primary Nav Rows */
+    .nav-row {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .pill-btn {
+      flex: 1;
+      height: 52px;
+      border-radius: 16px;
+      background: var(--btn-bg);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      color: var(--text-main);
+      font-size: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      transition: all 0.15s ease;
+    }
+
+    .pill-btn:active {
+      transform: scale(0.94);
+      background: var(--btn-active);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* Volume & Playback Controls */
+    .controls-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .vertical-rocker {
+      display: flex;
+      flex-direction: column;
+      background: var(--btn-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .rocker-btn {
+      height: 54px;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .rocker-btn:active {
+      background: var(--btn-active);
+      color: var(--accent);
+    }
+
+    .rocker-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 0 14px;
+    }
+
+    /* App Launcher Shortcuts */
+    .app-shortcuts {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .app-btn {
+      height: 46px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .app-btn.stremio {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(30, 41, 64, 0.6) 100%);
+      color: #c4b5fd;
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .app-btn.youtube {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(30, 41, 64, 0.6) 100%);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .app-btn.launcher {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(30, 41, 64, 0.6) 100%);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .app-btn.netflix {
+      background: linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, rgba(30, 41, 64, 0.6) 100%);
+      color: #ef4444;
+      border-color: rgba(220, 38, 38, 0.3);
+    }
+
+    .app-btn:active {
+      transform: scale(0.95);
+      filter: brightness(1.2);
+    }
+
+    /* Keyboard Input Drawer */
+    .text-input-bar {
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .remote-input {
+      flex: 1;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 0 14px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .remote-input:focus {
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .send-text-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .send-text-btn:active {
+      transform: scale(0.92);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="device-badge">
+      <div class="status-dot"></div>
+      <span>Fire TV Stick (192.168.0.115)</span>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" onclick="sendKey('mute')" title="Mute"><i class="bi bi-volume-mute"></i></button>
+      <button class="icon-btn power" onclick="sendKey('power')" title="Power"><i class="bi bi-power"></i></button>
+    </div>
+  </div>
+
+  <!-- Remote Case -->
+  <div class="remote-case">
+
+    <!-- Circular D-Pad -->
+    <div class="dpad-container">
+      <button class="dpad-btn dpad-up" onclick="sendKey('up')"><i class="bi bi-chevron-up"></i></button>
+      <button class="dpad-btn dpad-down" onclick="sendKey('down')"><i class="bi bi-chevron-down"></i></button>
+      <button class="dpad-btn dpad-left" onclick="sendKey('left')"><i class="bi bi-chevron-left"></i></button>
+      <button class="dpad-btn dpad-right" onclick="sendKey('right')"><i class="bi bi-chevron-right"></i></button>
+      <button class="dpad-center" onclick="sendKey('select')">OK</button>
+    </div>
+
+    <!-- Navigation Row -->
+    <div class="nav-row">
+      <button class="pill-btn" onclick="sendKey('back')"><i class="bi bi-arrow-left"></i></button>
+      <button class="pill-btn" onclick="sendKey('home')"><i class="bi bi-house"></i></button>
+      <button class="pill-btn" onclick="sendKey('menu')"><i class="bi bi-list"></i></button>
+    </div>
+
+    <!-- Controls Grid: Volume Rocker + Playback Rocker -->
+    <div class="controls-grid">
+      <!-- Volume Rocker -->
+      <div class="vertical-rocker">
+        <button class="rocker-btn" onclick="sendKey('volume_up')"><i class="bi bi-volume-up"></i></button>
+        <div class="rocker-divider"></div>
+        <button class="rocker-btn" onclick="sendKey('volume_down')"><i class="bi bi-volume-down"></i></button>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="vertical-rocker">
+        <button class="rocker-btn" onclick="sendKey('play_pause')"><i class="bi bi-play-fill"></i> <i class="bi bi-pause-fill"></i></button>
+        <div class="rocker-divider"></div>
+        <div style="display: flex; height: 54px;">
+          <button class="rocker-btn" style="flex: 1;" onclick="sendKey('rewind')"><i class="bi bi-rewind-fill"></i></button>
+          <div style="width: 1px; background: rgba(255,255,255,0.08);"></div>
+          <button class="rocker-btn" style="flex: 1;" onclick="sendKey('fast_forward')"><i class="bi bi-fast-forward-fill"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick App Shortcuts -->
+    <div class="app-shortcuts">
+      <button class="app-btn stremio" onclick="launchApp('stremio')">
+        <i class="bi bi-play-btn-fill"></i> Stremio (4K)
+      </button>
+      <button class="app-btn youtube" onclick="launchApp('smarttube')">
+        <i class="bi bi-play-circle-fill"></i> SmartTube
+      </button>
+      <button class="app-btn launcher" onclick="launchApp('flauncher')">
+        <i class="bi bi-grid-fill"></i> Clean TV
+      </button>
+      <button class="app-btn netflix" onclick="launchApp('netflix')">
+        <i class="bi bi-film"></i> Netflix
+      </button>
+    </div>
+
+  </div>
+
+  <!-- On-Screen Keyboard Transmitter -->
+  <div class="text-input-bar">
+    <input type="text" id="typeInput" class="remote-input" placeholder="Type text to search on TV..." onkeydown="if(event.key==='Enter') sendText()">
+    <button class="send-text-btn" onclick="sendText()"><i class="bi bi-send-fill"></i></button>
+  </div>
+
+  <script>
+    function triggerHaptic() {
+      if (navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+    }
+
+    async function sendKey(keyName) {
+      triggerHaptic();
+      try {
+        await fetch('/api/firetv/remote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: keyName })
+        });
+      } catch (e) {
+        console.error('Remote key error:', e);
+      }
+    }
+
+    async function launchApp(appName) {
+      triggerHaptic();
+      try {
+        await fetch('/api/firetv/launch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ app: appName })
+        });
+      } catch (e) {
+        console.error('App launch error:', e);
+      }
+    }
+
+    async function sendText() {
+      const input = document.getElementById('typeInput');
+      const text = input.value.trim();
+      if (!text) return;
+      triggerHaptic();
+      try {
+        await fetch('/api/firetv/text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text })
+        });
+        input.value = '';
+      } catch (e) {
+        console.error('Text send error:', e);
+      }
+    }
+  </script>
+</body>
+</html>

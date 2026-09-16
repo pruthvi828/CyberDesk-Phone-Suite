@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phone Data Cleaner & Safe Backup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <nav class="navbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <i class="bi bi-phone-fill"></i>
+      </div>
+      <div>
+        <div class="brand-name">Phone Cleaner Studio</div>
+        <div class="brand-sub">Safe USB Cleaner & Backup</div>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Mode Switcher -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="tabAdb" onclick="setMode('adb')">
+          <i class="bi bi-usb-symbol"></i> USB Cable
+        </button>
+        <button class="mode-tab" id="tabWireless" onclick="setMode('wireless')">
+          <i class="bi bi-wifi"></i> Wireless Wi-Fi
+        </button>
+        <button class="mode-tab" id="tabFolder" onclick="setMode('folder')">
+          <i class="bi bi-folder2-open"></i> Local Folder
+        </button>
+      </div>
+
+      <!-- Device Status Pill -->
+      <div class="status-pill disconnected" id="deviceStatusPill">
+        <div class="status-dot"></div>
+        <span id="deviceStatusText">Checking USB...</span>
+      </div>
+
+      <button class="btn btn-outline btn-sm" onclick="refreshDeviceStatus()" title="Refresh Device">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+      </button>
+    </div>
+  </nav>
+
+    <!-- Live Ongoing Transfer / Migration Card -->
+    <div class="glass-card" id="liveMigrationCard" style="display: none; border-color: rgba(99, 102, 241, 0.4); background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(22, 30, 46, 0.9) 100%);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="cat-icon-box info" style="animation: pulse 1.5s infinite;"><i class="bi bi-arrow-repeat"></i></div>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 700;">Live Video Transfer to Pen Drive</h3>
+            <span id="liveMigrationSub" style="font-size: 12px; color: var(--text-muted);">Moving videos to E:\Realme8_Phone_Videos & freeing phone space...</span>
+          </div>
+        </div>
+        <div class="status-pill ready">
+          <span id="liveMigrationPctText">0% Complete</span>
+        </div>
+      </div>
+
+      <div class="live-progress-bar" style="height: 10px; margin: 12px 0;">
+        <div class="live-progress-fill" id="liveMigrationFill" style="width: 0%;"></div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+        <span id="liveMigrationStats">0 / 126 videos (0.0 GB / 11.12 GB)</span>
+        <span id="liveMigrationRemaining">126 videos remaining</span>
+      </div>
+
+      <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px 14px; font-size: 12px;">
+        <div style="font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Recently Moved & Verified:</div>
+        <div id="liveMigrationRecentList" style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Wireless Debugging Form Banner -->
+    <div class="guide-banner" id="wirelessBanner" style="display: none; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 64, 0.8) 100%); border-color: rgba(16, 185, 129, 0.4);">
+      <div class="guide-icon" style="color: var(--success);">
+        <i class="bi bi-wifi"></i>
+      </div>
+      <div class="guide-content" style="flex: 1;">
+        <h4>Wireless Wi-Fi Pairing (Android 11+)</h4>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 2px;">
+          On your phone: <b>Settings > Developer Options > Wireless Debugging > Pair device with pairing code</b>
+        </p>
+        <div style="display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; align-items: center;">
+          <input type="text" id="wirelessPairAddress" class="destination-input" placeholder="IP:Port (e.g. 192.168.0.164:39907)" style="max-width: 250px;">
+          <input type="text" id="wirelessPairCode" class="destination-input" placeholder="6-digit code (e.g. 175391)" style="max-width: 180px;">
+          <button class="btn btn-success btn-sm" onclick="pairWirelessDevice()">
+            <i class="bi bi-link-45deg"></i> Pair Device
+          </button>
+          <span style="color: var(--text-muted); font-size: 12px;">or if already paired:</span>
+          <input type="text" id="wirelessConnectAddress" class="destination-input" placeholder="Main IP:Port" style="max-width: 210px;">
+          <button class="btn btn-outline btn-sm" onclick="connectWirelessDevice()">
+            <i class="bi bi-plug"></i> Connect
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Device Overview Hero Card -->
+    <div class="glass-card hero-card" id="heroCard">
+      <div class="device-details">
+        <div class="phone-avatar" id="deviceIcon">
+          <i class="bi bi-phone"></i>
+        </div>
+        <div>
+          <div class="device-title">
+            <span id="deviceModel">No Phone Connected</span>
+            <span class="action-badge badge-keep" id="deviceBrandBadge" style="display: none;">Android</span>
+          </div>
+          <div class="device-subtitle" id="deviceMeta">
+            <span><i class="bi bi-battery-charging"></i> Battery: --%</span>
+            <span><i class="bi bi-cpu"></i> OS: --</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <!-- Folder picker input (hidden for ADB, shown for folder mode) -->
+        <div id="folderInputGroup" style="display: none;">
+          <input type="text" id="customFolderPath" class="destination-input" placeholder="e.g. D:\MyPhoneBackup or E:\" style="width: 260px;">
+        </div>
+
+        <button class="btn btn-primary" id="btnStartScan" onclick="triggerScan()">
+          <i class="bi bi-lightning-charge-fill"></i> Start Deep Scan
+        </button>
+
+        <a href="/trackpad" target="_blank" class="btn btn-outline" style="border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.1); color: #818cf8; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;" title="Turn Phone into PC Mouse">
+          <i class="bi bi-cursor-fill"></i> Open Trackpad
+        </a>
+      </div>
+    </div>
+
+    <!-- Storage Bar (Only visible when device connected or scanned) -->
+    <div class="storage-bar-wrapper" id="storageBarWrapper" style="display: none;">
+      <div class="storage-labels">
+        <span><i class="bi bi-hdd-network"></i> Phone Storage</span>
+        <span id="storageStatsText">0 GB / 0 GB Used</span>
+      </div>
+      <div class="storage-progress">
+        <div class="storage-fill" id="storageFill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- Dual Actions Panel: Safe Backup vs Clean Junk -->
+    <div class="actions-grid" id="actionPanel" style="display: none;">
+      <!-- Card 1: Safe Backup -->
+      <div class="action-card backup-card">
+        <div>
+          <div class="action-header">
+            <div class="cat-icon-box success">
+              <i class="bi bi-shield-check"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 17px; font-weight: 700;">1. Safe Backup to PC</h3>
+              <span class="action-badge badge-keep">Protects Meaningful Docs & Photos</span>
+            </div>
+          </div>
+          <p class="action-desc">
+            Copies all your important documents (PDFs, Word, Excel, scanned files), genuine camera photos, and WhatsApp docs to your PC into organized folders before any cleanup.
+          </p>
+
+          <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">
+            Backup Destination Folder on PC:
+          </label>
+          <div class="destination-input-group">
+            <input type="text" id="backupDestinationInput" class="destination-input" value="D:\Phone_Safe_Backup">
+          </div>
+        </div>
+
+        <button class="btn btn-success" onclick="startBackup()" id="btnBackupNow">
+          <i class="bi bi-cloud-arrow-down-fill"></i> Backup Important Docs to PC Now
+        </button>
+      </div>
+
+      <!-- Card 2: Smart Clean Junk & Screenshots -->
+      <div class="action-card clean-card">
+        <div>
+          <div class="action-header">
+            <div class="cat-icon-box warning">
+              <i class="bi bi-trash3-fill"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 17px; font-weight: 700;">2. Clean Screenshots & Junk</h3>
+              <span class="action-badge badge-clean">Free Up Space</span>
+            </div>
+          </div>
+          <p class="action-desc">
+            Removes unwanted screenshots, app cache, thumbnails, trash leftovers, and duplicate stickers while keeping your documents and camera memories untouched.
+          </p>
+          <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+            <i class="bi bi-info-circle"></i> A preview dry-run will be shown first so you can review every file.
+          </div>
+        </div>
+
+        <button class="btn btn-danger" onclick="previewClean()" id="btnCleanNow">
+          <i class="bi bi-stars"></i> Review & Clean Screenshots / Junk
+        </button>
+      </div>
+    </div>
+
+    <!-- Categories Grid -->
+    <div id="categoriesSection" style="display: none;">
+      <div class="categories-section-header">
+        <div>
+          <h2 style="font-size: 18px; font-weight: 700;">Detected Phone Content</h2>
+          <p style="font-size: 13px; color: var(--text-muted);">Click any category to inspect, filter, or deselect individual files.</p>
+        </div>
+        <div id="scanStatsBadge" class="status-pill ready">
+          <span id="totalScannedSummary">0 files found (0 MB)</span>
+        </div>
+      </div>
+
+      <div class="categories-grid" id="categoriesGrid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Detail File Explorer Modal with Visual Gallery -->
+  <div class="modal-backdrop" id="fileModal">
+    <div class="modal-dialog" style="max-width: 960px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalCategoryTitle" style="font-size: 18px; font-weight: 700;">Category Files</h3>
+          <span id="modalCategorySubtitle" style="font-size: 12px; color: var(--text-muted);">0 files</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <!-- View Toggle -->
+          <div class="view-mode-toggle" id="viewModeToggle">
+            <button class="view-btn active" id="btnViewGallery" onclick="setViewMode('gallery')" title="Visual Gallery Grid">
+              <i class="bi bi-grid-3x3-gap-fill"></i> Gallery
+            </button>
+            <button class="view-btn" id="btnViewTable" onclick="setViewMode('table')" title="List / Table View">
+              <i class="bi bi-list-ul"></i> List
+            </button>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="closeModal('fileModal')">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <input type="text" id="fileSearchInput" class="destination-input" placeholder="Search filenames..." oninput="filterModalFiles()" style="max-width: 260px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-outline btn-sm" onclick="toggleSelectAllModal(true)"><i class="bi bi-check-all"></i> Select All</button>
+            <button class="btn btn-outline btn-sm" onclick="toggleSelectAllModal(false)">Deselect All</button>
+            <button class="btn btn-danger btn-sm" id="btnDeleteSelectedModal" onclick="deleteSelectedInModal()" style="display: none;">
+              <i class="bi bi-trash3-fill"></i> Delete Selected (<span id="modalSelectedCount">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Visual Gallery Grid -->
+        <div class="gallery-grid" id="modalGalleryGrid" style="max-height: 480px; overflow-y: auto; display: grid;">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- Table View -->
+        <div id="modalTableViewWrapper" style="max-height: 480px; overflow-y: auto; display: none;">
+          <table class="file-table">
+            <thead>
+              <tr>
+                <th width="36"><input type="checkbox" id="modalMasterCheckbox" onchange="toggleSelectAllModal(this.checked)"></th>
+                <th>File Name</th>
+                <th>Size</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="modalFileListBody">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('fileModal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Lightbox / Video Player Modal -->
+  <div class="lightbox-modal" id="lightboxModal">
+    <div style="position: absolute; top: 20px; right: 24px; z-index: 2010;">
+      <button class="btn btn-outline btn-sm" onclick="closeLightbox()" style="background: rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.2);">
+        <i class="bi bi-x-lg"></i> Close
+      </button>
+    </div>
+    
+    <div class="lightbox-content" id="lightboxMediaContainer">
+      <!-- Injected Image or Video -->
+    </div>
+
+    <div class="lightbox-toolbar">
+      <button class="btn btn-outline btn-sm" onclick="navLightbox(-1)"><i class="bi bi-chevron-left"></i> Prev</button>
+      <span id="lightboxFileTitle" style="font-size: 13px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff;">File</span>
+      <button class="btn btn-danger btn-sm" id="btnLightboxDelete" onclick="deleteCurrentLightboxItem()"><i class="bi bi-trash3"></i> Delete This</button>
+      <button class="btn btn-outline btn-sm" onclick="navLightbox(1)">Next <i class="bi bi-chevron-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Dry Run / Clean Confirmation Modal -->
+  <div class="modal-backdrop" id="cleanConfirmModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size: 18px; font-weight: 700; color: var(--danger);">Confirm Clean Up</h3>
+          <span id="cleanPreviewSummary" style="font-size: 12px; color: var(--text-muted);">Review files targeted for deletion</span>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="closeModal('cleanConfirmModal')">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 14px; font-size: 13px;">
+          <i class="bi bi-exclamation-triangle-fill" style="color: var(--danger);"></i>
+          <b>Warning:</b> The files below will be permanently deleted from your phone to free up space. (Make sure you have backed up your important documents first).
+        </div>
+        <div style="max-height: 300px; overflow-y: auto;">
+          <table class="file-table">
+            <thead>
+              <tr>
+                <th>File Name</th>
+                <th>Path</th>
+                <th>Size</th>
+              </tr>
+            </thead>
+            <tbody id="cleanPreviewListBody">
+              <!-- Injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('cleanConfirmModal')">Cancel</button>
+        <button class="btn btn-danger" id="btnExecuteDelete" onclick="executeClean()">
+          <i class="bi bi-trash3-fill"></i> Yes, Delete Selected Files
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Operation Progress Modal -->
+  <div class="modal-backdrop" id="progressModal">
+    <div class="modal-dialog" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 id="progressModalTitle" style="font-size: 17px; font-weight: 700;">Processing...</h3>
+      </div>
+      <div class="modal-body">
+        <div id="progressStatusText" style="font-size: 14px; margin-bottom: 8px; color: var(--text-main);">Starting...</div>
+        <div class="live-progress-bar">
+          <div class="live-progress-fill" id="liveProgressBarFill"></div>
+        </div>
+        <div class="log-box" id="liveLogBox">
+          [System Ready]
+        </div>
+      </div>
+      <div class="modal-footer" id="progressModalFooter" style="display: none;">
+        <button class="btn btn-primary" onclick="closeModal('progressModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

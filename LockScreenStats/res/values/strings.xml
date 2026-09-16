@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LockScreen Stats</string>
+    <string name="channel_name">Lock Screen Live Stats</string>
+    <string name="channel_desc">Shows live battery remaining time and phone screen time on lock screen</string>
+</resources>

@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#080c14">
+  <title>Realme Ultra Trackpad & Air Mouse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --bg-dark: #080c14;
+      --surface-1: rgba(22, 30, 49, 0.7);
+      --surface-2: rgba(30, 41, 66, 0.9);
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.4);
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #17233f 0%, #080c14 100%);
+      color: var(--text-main);
+      font-family: 'Outfit', sans-serif;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Top Bar */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px 6px;
+      z-index: 10;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+      transition: all 0.3s ease;
+    }
+
+    .status-dot.connected {
+      background: var(--accent-green);
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .action-chip {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.15s ease;
+    }
+
+    .action-chip.active {
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      border-color: #38bdf8;
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.4);
+    }
+
+    /* Live Event Toast Banner */
+    .event-toast {
+      position: absolute;
+      top: 58px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 4px 14px;
+      border-radius: 16px;
+      font-size: 11px;
+      color: var(--accent-cyan);
+      font-weight: 600;
+      pointer-events: none;
+      z-index: 15;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .event-toast.visible {
+      opacity: 1;
+    }
+
+    /* Main Touchpad Surface */
+    .touchpad-container {
+      flex: 1;
+      margin: 4px 12px 10px;
+      border-radius: 22px;
+      background: radial-gradient(circle at 50% 50%, rgba(30, 41, 66, 0.45) 0%, rgba(15, 23, 42, 0.85) 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 2px 12px rgba(0,0,0,0.5), 0 8px 30px rgba(0,0,0,0.4);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    .touchpad-hint {
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      text-align: center;
+      transition: opacity 0.3s ease;
+    }
+
+    .touch-cursor {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.6) 0%, rgba(99, 102, 241, 0) 70%);
+      border: 2px solid var(--accent);
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.08s ease-out;
+      opacity: 0;
+      z-index: 5;
+    }
+
+    .touch-cursor.visible {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+
+    /* Scroll Strip on Right Edge */
+    .scroll-strip {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 48px;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 1px dashed rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    /* Bottom Mouse Buttons */
+    .bottom-bar {
+      padding: 0 12px 14px;
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    .mouse-btn {
+      flex: 1;
+      height: 60px;
+      border-radius: 16px;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      transition: all 0.1s ease;
+    }
+
+    .mouse-btn:active, .mouse-btn.active {
+      transform: scale(0.95);
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      border-color: #818cf8;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .mouse-btn span {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    /* Tools Drawer */
+    .drawer-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.97);
+      border-top: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px 28px 0 0;
+      padding: 16px 18px 24px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
+      transform: translateY(105%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 20;
+    }
+
+    .drawer-panel.open {
+      transform: translateY(0);
+    }
+
+    .drawer-handle {
+      width: 44px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 4px;
+      margin: 0 auto 14px;
+      cursor: pointer;
+    }
+
+    .drawer-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .quick-btn {
+      height: 46px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .quick-btn:active {
+      transform: scale(0.92);
+      background: var(--accent);
+    }
+
+    .type-box-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .type-input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .type-input:focus {
+      border-color: var(--accent);
+    }
+
+    .send-text-btn {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 0 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .slider-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    .slider-input {
+      width: 140px;
+      accent-color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Bar -->
+  <div class="header-bar">
+    <div class="brand-group">
+      <div class="brand-icon"><i class="bi bi-cursor-fill"></i></div>
+      <div>
+        <div class="brand-title">Realme Trackpad</div>
+        <div class="brand-sub">Zero-Lag Mouse & Tools</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button class="action-chip" id="airMouseBtn" onclick="toggleAirMouse()">
+        <i class="bi bi-compass"></i> Air Mouse
+      </button>
+      <button class="action-chip" onclick="toggleDrawer()">
+        <i class="bi bi-grid-fill"></i> Tools
+      </button>
+      <div class="status-pill">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Connecting</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Toast -->
+  <div class="event-toast" id="eventToast">Touch active</div>
+
+  <!-- Touchpad Surface -->
+  <div class="touchpad-container" id="touchSurface">
+    <div class="touch-cursor" id="touchCursor"></div>
+    <div class="touchpad-hint" id="touchHint">
+      <i class="bi bi-fingerprint" style="font-size: 34px; color: rgba(255,255,255,0.25);"></i>
+      <span>SWIPE TO GLIDE PC MOUSE</span>
+      <span style="font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px;">
+        1 Tap = Left Click &bull; 2 Taps = Right Click &bull; 2 Fingers = Scroll
+      </span>
+    </div>
+
+    <div class="scroll-strip">
+      <i class="bi bi-chevron-up"></i>
+      <span style="writing-mode: vertical-rl; font-size: 10px; letter-spacing: 2px;">SCROLL</span>
+      <i class="bi bi-chevron-down"></i>
+    </div>
+  </div>
+
+  <!-- Bottom Mouse Buttons -->
+  <div class="bottom-bar">
+    <button class="mouse-btn" id="btnLeftClick">
+      <i class="bi bi-mouse"></i>
+      LEFT CLICK
+    </button>
+    <button class="mouse-btn" id="btnMiddleClick" style="max-width: 72px;">
+      <i class="bi bi-record-circle"></i>
+      <span>MID</span>
+    </button>
+    <button class="mouse-btn" id="btnRightClick">
+      <i class="bi bi-mouse2"></i>
+      RIGHT CLICK
+    </button>
+  </div>
+
+  <!-- Tools & Keyboard Drawer -->
+  <div class="drawer-panel" id="toolsDrawer">
+    <div class="drawer-handle" onclick="toggleDrawer()"></div>
+
+    <div class="slider-group">
+      <span style="font-size: 13px; font-weight: 600;">Mouse Speed</span>
+      <input type="range" class="slider-input" id="sensSlider" min="0.5" max="3.5" step="0.1" value="1.5" oninput="updateSensitivity(this.value)">
+      <span id="sensValue" style="font-size: 13px; font-weight: 700; color: var(--accent);">1.5x</span>
+    </div>
+
+    <div class="drawer-section-title">Media & Audio</div>
+    <div class="quick-grid">
+      <button class="quick-btn" onclick="sendKey('vol_down')"><i class="bi bi-volume-down-fill"></i> Vol -</button>
+      <button class="quick-btn" onclick="sendKey('vol_up')"><i class="bi bi-volume-up-fill"></i> Vol +</button>
+      <button class="quick-btn" onclick="sendKey('vol_mute')"><i class="bi bi-volume-mute-fill"></i> Mute</button>
+      <button class="quick-btn" onclick="sendKey('media_play')"><i class="bi bi-play-pause-fill"></i> Play</button>
+    </div>
+
+    <div class="drawer-section-title">Windows Shortcuts</div>
+    <div class="quick-grid">
+      <button class="quick-btn" onclick="sendKey('win_d')"><i class="bi bi-window-desktop"></i> Desktop</button>
+      <button class="quick-btn" onclick="sendKey('alt_tab')"><i class="bi bi-layers-fill"></i> Alt+Tab</button>
+      <button class="quick-btn" onclick="sendKey('esc')"><i class="bi bi-x-circle"></i> Esc</button>
+      <button class="quick-btn" onclick="sendKey('enter')"><i class="bi bi-arrow-return-left"></i> Enter</button>
+    </div>
+
+    <div class="drawer-section-title">Presentation & Arrows</div>
+    <div class="quick-grid">
+      <button class="quick-btn" onclick="sendKey('pageup')"><i class="bi bi-chevron-left"></i> Prev Slide</button>
+      <button class="quick-btn" onclick="sendKey('pagedown')"><i class="bi bi-chevron-right"></i> Next Slide</button>
+      <button class="quick-btn" onclick="sendKey('space')"><i class="bi bi-space"></i> Space</button>
+      <button class="quick-btn" onclick="sendKey('backspace')"><i class="bi bi-backspace"></i> Backspace</button>
+    </div>
+
+    <div class="drawer-section-title">Type Text to PC</div>
+    <div class="type-box-group">
+      <input type="text" id="pcTextInput" class="type-input" placeholder="Type text here and hit send...">
+      <button class="send-text-btn" onclick="sendTypedText()"><i class="bi bi-send-fill"></i> Send</button>
+    </div>
+  </div>
+
+  <script>
+    let ws = null;
+    let sensitivity = 1.5;
+    let airMouseActive = false;
+    let lastAirBeta = null, lastAirGamma = null;
+
+    const surface = document.getElementById('touchSurface');
+    const touchCursor = document.getElementById('touchCursor');
+    const touchHint = document.getElementById('touchHint');
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const drawer = document.getElementById('toolsDrawer');
+    const airMouseBtn = document.getElementById('airMouseBtn');
+    const toast = document.getElementById('eventToast');
+
+    function showToast(msg) {
+      toast.innerText = msg;
+      toast.classList.add('visible');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => toast.classList.remove('visible'), 1000);
+    }
+
+    // Connect WebSocket
+    function connectWS() {
+      const loc = window.location;
+      const protocol = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${loc.host}/ws/mouse`;
+
+      try {
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          statusDot.classList.add('connected');
+          statusText.innerText = 'Connected';
+          showToast('⚡ Connected to PC!');
+        };
+
+        ws.onclose = () => {
+          statusDot.classList.remove('connected');
+          statusText.innerText = 'Reconnecting...';
+          setTimeout(connectWS, 1200);
+        };
+
+        ws.onerror = () => {
+          statusDot.classList.remove('connected');
+        };
+      } catch (err) {
+        setTimeout(connectWS, 2000);
+      }
+    }
+
+    function sendEvent(data) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(data));
+      } else {
+        // HTTP Fallback
+        fetch('/api/mouse/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        }).catch(() => {});
+      }
+    }
+
+    function haptic(ms = 15) {
+      if (navigator.vibrate) {
+        try { navigator.vibrate(ms); } catch(e) {}
+      }
+    }
+
+    function updateSensitivity(val) {
+      sensitivity = parseFloat(val);
+      document.getElementById('sensValue').innerText = `${sensitivity.toFixed(1)}x`;
+    }
+
+    // Touch & Pointer Gesture Tracking
+    let touchState = {
+      active: false,
+      startX: 0,
+      startY: 0,
+      lastX: 0,
+      lastY: 0,
+      startTime: 0,
+      moved: false,
+      fingerCount: 0
+    };
+
+    let touchesMap = new Map();
+
+    surface.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      touchState.startTime = Date.now();
+      touchState.moved = false;
+      touchState.active = true;
+      touchHint.style.opacity = '0';
+
+      touchesMap.clear();
+      for (let i = 0; i < e.touches.length; i++) {
+        const t = e.touches[i];
+        touchesMap.set(t.identifier, { x: t.clientX, y: t.clientY });
+      }
+
+      if (e.touches.length === 1) {
+        const t = e.touches[0];
+        const rect = surface.getBoundingClientRect();
+        touchState.startX = t.clientX;
+        touchState.startY = t.clientY;
+        touchState.lastX = t.clientX;
+        touchState.lastY = t.clientY;
+        touchCursor.style.left = `${t.clientX - rect.left}px`;
+        touchCursor.style.top = `${t.clientY - rect.top}px`;
+        touchCursor.classList.add('visible');
+      }
+    }, { passive: false });
+
+    surface.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const rect = surface.getBoundingClientRect();
+
+      // 1-Finger Cursor Movement
+      if (e.touches.length === 1) {
+        const t = e.touches[0];
+        const dx = t.clientX - touchState.lastX;
+        const dy = t.clientY - touchState.lastY;
+
+        // Dedicated Scroll Strip on right 45px
+        if (touchState.startX > rect.right - 50) {
+          sendEvent({ type: 'scroll', dy: -dy * 0.4, dx: 0, sensitivity });
+          showToast('🔄 Scrolling');
+        } else {
+          if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+            touchState.moved = true;
+            sendEvent({ type: 'move', dx: dx, dy: dy, sensitivity: sensitivity, acceleration: true });
+          }
+        }
+
+        touchState.lastX = t.clientX;
+        touchState.lastY = t.clientY;
+        touchCursor.style.left = `${t.clientX - rect.left}px`;
+        touchCursor.style.top = `${t.clientY - rect.top}px`;
+      }
+      // 2-Finger Scroll
+      else if (e.touches.length === 2) {
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const prev1 = touchesMap.get(t1.identifier);
+        const prev2 = touchesMap.get(t2.identifier);
+
+        if (prev1 && prev2) {
+          const dy = ((t1.clientY - prev1.y) + (t2.clientY - prev2.y)) / 2;
+          const dx = ((t1.clientX - prev1.x) + (t2.clientX - prev2.x)) / 2;
+          if (Math.abs(dy) > 0.8 || Math.abs(dx) > 0.8) {
+            touchState.moved = true;
+            sendEvent({ type: 'scroll', dy: -dy * 0.4, dx: -dx * 0.4, sensitivity });
+            showToast('🔄 2-Finger Scroll');
+          }
+          touchesMap.set(t1.identifier, { x: t1.clientX, y: t1.clientY });
+          touchesMap.set(t2.identifier, { x: t2.clientX, y: t2.clientY });
+        }
+      }
+    }, { passive: false });
+
+    surface.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      const elapsed = Date.now() - touchState.startTime;
+
+      if (!touchState.moved && elapsed < 300) {
+        if (e.touches.length === 0 && e.changedTouches.length === 1) {
+          // 1 Finger Tap = Left Click
+          sendEvent({ type: 'click', button: 'left' });
+          showToast('👆 Left Click');
+          haptic(15);
+        } else if (e.changedTouches.length === 2 || e.touches.length === 1) {
+          // 2 Finger Tap = Right Click
+          sendEvent({ type: 'click', button: 'right' });
+          showToast('✌️ Right Click');
+          haptic(25);
+        }
+      }
+
+      if (e.touches.length === 0) {
+        touchCursor.classList.remove('visible');
+        touchState.active = false;
+        setTimeout(() => {
+          if (!touchState.active) touchHint.style.opacity = '1';
+        }, 1200);
+      }
+    }, { passive: false });
+
+    // Buttons
+    function setupBtn(id, btnType) {
+      const el = document.getElementById(id);
+      el.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        sendEvent({ type: 'down', button: btnType });
+        el.classList.add('active');
+        haptic(20);
+        showToast(btnType === 'left' ? 'Left Click' : (btnType === 'right' ? 'Right Click' : 'Mid Click'));
+      });
+      el.addEventListener('pointerup', (e) => {
+        e.preventDefault();
+        sendEvent({ type: 'up', button: btnType });
+        el.classList.remove('active');
+      });
+      el.addEventListener('pointerleave', (e) => {
+        sendEvent({ type: 'up', button: btnType });
+        el.classList.remove('active');
+      });
+    }
+
+    setupBtn('btnLeftClick', 'left');
+    setupBtn('btnRightClick', 'right');
+    setupBtn('btnMiddleClick', 'middle');
+
+    function sendKey(k) {
+      sendEvent({ type: 'key', key: k });
+      showToast(`Key: ${k}`);
+      haptic(15);
+    }
+
+    function sendTypedText() {
+      const inp = document.getElementById('pcTextInput');
+      const text = inp.value;
+      if (text) {
+        sendEvent({ type: 'text', text: text });
+        showToast(`Typed: "${text}"`);
+        inp.value = '';
+        haptic(25);
+      }
+    }
+
+    document.getElementById('pcTextInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendTypedText();
+    });
+
+    // Air Mouse
+    function toggleAirMouse() {
+      airMouseActive = !airMouseActive;
+      if (airMouseActive) {
+        airMouseBtn.classList.add('active');
+        showToast('🪄 Air Mouse Active!');
+        haptic(35);
+        if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
+          DeviceOrientationEvent.requestPermission().then(state => {
+            if (state === 'granted') startGyro();
+          });
+        } else {
+          startGyro();
+        }
+      } else {
+        airMouseBtn.classList.remove('active');
+        window.removeEventListener('deviceorientation', handleGyro);
+        lastAirBeta = lastAirGamma = null;
+        showToast('Air Mouse Off');
+      }
+    }
+
+    function startGyro() {
+      window.addEventListener('deviceorientation', handleGyro);
+    }
+
+    function handleGyro(e) {
+      if (!airMouseActive) return;
+      if (lastAirGamma === null || lastAirBeta === null) {
+        lastAirGamma = e.gamma;
+        lastAirBeta = e.beta;
+        return;
+      }
+
+      let dGamma = e.gamma - lastAirGamma;
+      let dBeta = e.beta - lastAirBeta;
+
+      if (Math.abs(dGamma) < 0.12) dGamma = 0;
+      if (Math.abs(dBeta) < 0.12) dBeta = 0;
+
+      if (dGamma !== 0 || dBeta !== 0) {
+        sendEvent({
+          type: 'move',
+          dx: dGamma * 3.8 * sensitivity,
+          dy: dBeta * 3.8 * sensitivity,
+          sensitivity: 1.0,
+          acceleration: false
+        });
+      }
+
+      lastAirGamma = e.gamma;
+      lastAirBeta = e.beta;
+    }
+
+    function toggleDrawer() {
+      drawer.classList.toggle('open');
+      haptic(15);
+    }
+
+    connectWS();
+  </script>
+</body>
+</html>
