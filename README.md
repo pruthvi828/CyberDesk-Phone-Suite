@@ -28,6 +28,16 @@ An advanced hardware interfacing and diagnostic suite for Android devices over U
 ### 6. 📡 Autonomous Open-Source Contribution Radar
 - Automated GitHub Actions scout that continuously indexes unassigned `good first issue` opportunities across high-star repositories with a zero-risk anti-spam policy.
 
+### 7. 🔋 Smart Battery & Charging Telemetry Widget (Homescreen & Lockscreen)
+- **Multi-Phase Charging Curve & Protocol Detection**: Automatically classifies charging protocols and wattages (SuperVOOC 67W, Fast Charging 15W–30W+, Standard AC, USB) and calculates real-time capacity needed to achieve a full charge.
+- **Adaptive CC/CV Saturation & Time-to-Full Modeling**: Mathematically projects charging time by accounting for the non-linear Constant Current to Constant Voltage (CC/CV) saturation taper above 80% SoC, blended with empirical delta tracking via `SharedPreferences`.
+- **Dynamic Discharge Rate & Depletion Clock**: Measures real-time battery temperature (0.1°C resolution) and couples chipset power profiles (e.g., MediaTek Dimensity 7050 drain profile ~5.5%/hr) to project exact hours remaining and estimated empty clock time (e.g. `Until 02:30 AM`).
+- **Homescreen & Lockscreen Keyguard AppWidget**: Native Android `AppWidgetProvider` built with `RemoteViews`, background broadcast receivers (`ACTION_BATTERY_CHANGED`), and instant tap-to-refresh (`ACTION_APPWIDGET_UPDATE`).
+
+<p align="center">
+  <img src="./LockScreenStats/widget_preview.png" alt="Smart Battery Widget" width="500" />
+</p>
+
 ---
 
 ## 🏗️ Architecture Overview
